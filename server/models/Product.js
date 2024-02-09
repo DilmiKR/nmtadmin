@@ -30,7 +30,7 @@ const ProductSchema = new mongoose.Schema(
         type: Number,
         required: true,
       },
-    categoryId: String,
+    category: String,
     companyOrderId: String,
     itemDescription: String,
     brand:String,

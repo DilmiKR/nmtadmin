@@ -12,7 +12,7 @@ import salesRoutes from "./routes/sales.js";
 
 //import data
 import Product from './models/Product.js';
-import {dataProduct} from './data/index.js'
+//import {dataProduct} from './data/index.js'
 
 dotenv.config();
 const app = express();
@@ -23,7 +23,6 @@ app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
-
 app.use("/details", detailRoutes);
 app.use("/general", generalRoutes);
 app.use("/management", managementRoutes);
@@ -31,9 +30,14 @@ app.use("/sales", salesRoutes);
 
 const PORT = 5001 || 9000;
 mongoose
-  .connect("mongodb+srv://nelundeniyamotortraders:nmt1234@cluster0.6vnazjw.mongodb.net/?retryWrites=true&w=majority")
+.connect("mongodb+srv://nelundeniyamotortraders:nmt1234@cluster0.6vnazjw.mongodb.net/?retryWrites=true&w=majority")
   .then(() => {
-    app.listen(PORT, () => console.log(`Server is starting`));
+    app.post("/addproduct", (req,res)=> {
+      Product.create(req.body)
+      .then(Product => res.json(Product))
+      .catch(err=>res.json(err))
+    })
+    app.listen(PORT, () => console.log(`Server is running`));
     //Product.insertMany(dataProduct);
   })
   .catch((error) => console.log(`${error} did not connect`));
