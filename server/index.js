@@ -12,6 +12,10 @@ import salesRoutes from "./routes/sales.js";
 
 //import data
 import Product from './models/Product.js';
+import Customer from './models/Customer.js';
+import Sales from './models/Sales.js';
+import Supplier from './models/Supplier.js';
+//import { dataCustomer } from './data/index.js';
 //import {dataProduct} from './data/index.js'
 
 dotenv.config();
@@ -37,7 +41,25 @@ mongoose
       .then(Product => res.json(Product))
       .catch(err=>res.json(err))
     })
+    app.post("/addcustomer", (req,res)=> {
+      Customer.create(req.body)
+      .then(Customer => res.json(Customer))
+      .catch(err=>res.json(err))
+    })
+
+    app.post("/addsales", (req,res)=> {
+      Sales.create(req.body)
+      .then(Sales => res.json(Sales))
+      .catch(err=>res.json(err))
+    })
+
+    app.post("/addsupplier", (req,res)=> {
+      Supplier.create(req.body)
+      .then(Supplier => res.json(Supplier))
+      .catch(err=>res.json(err))
+    })
     app.listen(PORT, () => console.log(`Server is running`));
     //Product.insertMany(dataProduct);
+    //customer.insertMany(dataCustomer);
   })
   .catch((error) => console.log(`${error} did not connect`));
