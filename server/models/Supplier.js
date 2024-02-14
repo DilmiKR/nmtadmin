@@ -3,17 +3,21 @@ import mongoose from "mongoose";
 const SupplierSchema = new mongoose.Schema(
   {
     
-    ContactPerson: {
-        type: String,
-      required: true,
-      unique: true,
+  ContactPerson: {
+    type: String,
+    required: true,
+    unique: true,
     },
-
-    Email: String,
-    Phone: String,
-    SupplierName: {
-      type: String,
-      required: true,
+  Email: {
+    type: String,
+    required: true,
+   },
+   Phone: {
+    type: String,
+   },
+   SupplierName: {
+    type: String,
+    required: true,
   },
   },
   { timestamps: true }

@@ -58,6 +58,21 @@ mongoose
       .then(Supplier => res.json(Supplier))
       .catch(err=>res.json(err))
     })
+
+    app.delete("/supplier/:id", (req, res) => {
+      const { id } = req.params;
+      Supplier.findByIdAndDelete(id)
+        .then((deletedSupplier) => {
+          if (!deletedSupplier) {
+            return res.status(404).json({ message: "Supplier not found" });
+          }
+          res.status(200).json({ message: "Supplier deleted successfully", deletedSupplier });
+        })
+        .catch((error) => {
+          console.error("Error deleting supplier:", error);
+          res.status(500).json({ message: "Internal server error" });
+        });
+    });
     app.listen(PORT, () => console.log(`Server is running`));
     //Product.insertMany(dataProduct);
     //customer.insertMany(dataCustomer);
