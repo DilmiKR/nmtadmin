@@ -2,103 +2,92 @@ import mongoose from "mongoose";
 
 const ProductSchema = new mongoose.Schema(
   {
-    
     category: {
       type: String,
       required: true
-  },
+    },
 
-  nelundeniyaCode: {
-    type: String,
-  required: true,
-  unique: true,
-},
+    nelundeniyaCode: {
+      type: String,
+      required: true
+    },
 
-itemCode: {
-  type: String,
-  required: true
-},
+    itemCode: {
+      type: String,
+      required: true
+    },
 
     ItemName: {
       type: String,
       required: true,
       min: 2,
-      max: 100,
+      max: 100
     },
     
     brand: {
       type: String,
       required: true,
       min: 2,
-      max: 100,
+      max: 100
     },
     
     UnitPrice: {
       type: Number,
-      required: true,
+      required: true
     },
 
     quantity: {
       type: Number,
-      required: true,
     },
 
     supplierDiscount: {
       type: Number,
-      required: true,
+      required: true
     },
 
     LineValue: {
       type: Number,
-      required: true,
+      required: true
     },
 
     purchasedPrice: {
       type: Number,
-      required: true,
+      required: true
     },
 
     sellingPrice: {
       type: Number,
-      required: true,
+      required: true
     },
     
     Supplier: {
       type: String,
       required: true,
       min: 2,
-      max: 100,
+      max: 100
     },
 
     OrderID: {
       type: String,
       required: true,
       min: 2,
-      max: 100,
+      max: 100
     },
 
     OrderDeliveryDate: {
-      type: Date,
-      min: 2,
-      max: 100,
+      type: Date
     },
-
+    
     UOM: {
       type: String,
       required: true,
       min: 2,
-      max: 100,
+      max: 100
     },
-
-    itemDescription: {
-      type: String,
-      required: true,
-      min: 2,
-      max: 100,
+    soldQuantity: {
+      type: Number,
     },
-    
-    itemDescription: String,
-    brand:String,
+    itemDescription: String
   },
   { timestamps: true }
 );

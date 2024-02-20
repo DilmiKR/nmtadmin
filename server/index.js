@@ -36,11 +36,39 @@ const PORT = 5001 || 9000;
 mongoose
 .connect("mongodb+srv://nelundeniyamotortraders:nmt1234@cluster0.6vnazjw.mongodb.net/?retryWrites=true&w=majority")
   .then(() => {
+
+    app.get("/products", async (req, res) => {
+      try {
+        const products = await Product.find();
+        res.json(products);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
     app.post("/addproduct", (req,res)=> {
       Product.create(req.body)
       .then(Product => res.json(Product))
       .catch(err=>res.json(err))
-    })
+    });
+    
+    app.put("/product/:id", async (req, res) => {
+      const productId = req.params.id;
+      const { quantity } = req.body;
+
+      try {
+        const product = await Product.findByIdAndUpdate(productId, { quantity }, { new: true });
+        if (!product) {
+          return res.status(404).json({ message: "Product not found" });
+        }
+        res.status(200).json({ message: "Product quantity updated successfully", product });
+      } catch (error) {
+        console.error("Error updating product quantity:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
     app.post("/addcustomer", (req,res)=> {
       Customer.create(req.body)
       .then(Customer => res.json(Customer))
@@ -59,7 +87,17 @@ mongoose
       .catch(err=>res.json(err))
     })
 
-    app.delete("/supplier/:id", (req, res) => {
+    app.get("/suppliers/:id", async (req, res) => {
+      try {
+        const suppliers = await Supplier.find();
+        res.json(suppliers);
+      } catch (error) {
+        console.error("Error fetching suppliers:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
+    app.delete("/suppliers/:ContactPerson", (req, res) => {
       const { id } = req.params;
       Supplier.findByIdAndDelete(id)
         .then((deletedSupplier) => {

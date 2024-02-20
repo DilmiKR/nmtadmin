@@ -11,6 +11,9 @@ const SalesSchema = new mongoose.Schema(
     },
     products: [
       {
+        nelundeniyaCode: {
+          type: String,
+      },
         productId:{
           type:String,
           required: true,
@@ -21,7 +24,6 @@ const SalesSchema = new mongoose.Schema(
         },
         soldQuantity: {
           type: Number,
-          required: true,
         },
         unitPrice: {
           type: Number,

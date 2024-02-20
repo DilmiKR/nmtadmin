@@ -1,6 +1,7 @@
 import Product from "../models/Product.js";
 import Customer from "../models/Customer.js";
 import Supplier from "../models/Supplier.js";
+import Sales from "../models/Sales.js";
 
 export const getProducts = async (req, res) => {
   try {
@@ -24,6 +25,15 @@ export const getSupplier = async (req, res) => {
   try {
     const supplier = await Supplier.find();
     res.status(200).json(supplier);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const getSales = async (req, res) => {
+  try {
+    const sales = await Sales.find();
+    res.status(200).json(sales);
   } catch (error) {
     res.status(404).json({ message: error.message });
   }

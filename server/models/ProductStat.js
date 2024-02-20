@@ -6,7 +6,6 @@ const ProductStatSchema = new mongoose.Schema(
     nelundeniyaCode: {
         type: String,
       required: true,
-      unique: true,
     },
     category: String,
     itemDescription: String,
