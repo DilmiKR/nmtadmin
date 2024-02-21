@@ -2,6 +2,7 @@ import Product from "../models/Product.js";
 import Customer from "../models/Customer.js";
 import Supplier from "../models/Supplier.js";
 import Sales from "../models/Sales.js";
+import Category from "../models/Categories.js";
 
 export const getProduct = async (req, res) => {
     try {
@@ -38,6 +39,16 @@ export const getProduct = async (req, res) => {
       const { id } = req.params;
       const sales = await Sales.findById(id);
       res.status(200).json(sales);
+    } catch (error) {
+      res.status(404).json({ message: error.message });
+    }
+  };
+
+  export const getCategory = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const categories = await Category.findById(id);
+      res.status(200).json(categories);
     } catch (error) {
       res.status(404).json({ message: error.message });
     }

@@ -15,6 +15,7 @@ import Product from './models/Product.js';
 import Customer from './models/Customer.js';
 import Sales from './models/Sales.js';
 import Supplier from './models/Supplier.js';
+import Category from './models/Categories.js';
 //import { dataCustomer } from './data/index.js';
 //import {dataProduct} from './data/index.js'
 
@@ -111,6 +112,23 @@ mongoose
           res.status(500).json({ message: "Internal server error" });
         });
     });
+
+    app.get("/categories", async (req, res) => {
+      try {
+        const categories = await Category.find();
+        res.json(categories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
+    app.post("/addcategory", (req,res)=> {
+      Category.create(req.body)
+      .then(Category => res.json(Category))
+      .catch(err=>res.json(err))
+    });
+
     app.listen(PORT, () => console.log(`Server is running`));
     //Product.insertMany(dataProduct);
     //customer.insertMany(dataCustomer);
