@@ -75,7 +75,8 @@ const ProductSchema = new mongoose.Schema(
     },
 
     OrderDeliveryDate: {
-      type: Date
+      type: Date,
+      required: true,
     },
     
     UOM: {

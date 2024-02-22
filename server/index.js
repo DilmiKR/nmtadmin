@@ -1,4 +1,5 @@
 import express from 'express';
+const router = express.Router();
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -16,8 +17,10 @@ import Customer from './models/Customer.js';
 import Sales from './models/Sales.js';
 import Supplier from './models/Supplier.js';
 import Category from './models/Categories.js';
+import SupplierPayment from './models/SupplierPayment.js';
 //import { dataCustomer } from './data/index.js';
 //import {dataProduct} from './data/index.js'
+//import { dataSupplierPayment } from './data/index.js';
 
 dotenv.config();
 const app = express();
@@ -113,6 +116,70 @@ mongoose
         });
     });
 
+    app.get("/supplierpayment", async (req, res) => {
+      try {
+        const supplierpayment = await SupplierPayment.find();
+        res.json(supplierpayment);
+      } catch (error) {
+        console.error("Error fetching Supplier Payment:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
+    app.put("/updatesupplierpayment", async (req, res) => {
+      try {
+        const updatedData = req.body;
+    
+        for (const row of updatedData) {
+          await SupplierPayment.findByIdAndUpdate(row._id, {
+            InvoiceValue: row.InvoiceValue,
+            PaidCheck: row.PaidCheck,
+            CheckDate: row.CheckDate,
+          });
+        }
+    
+        res.status(200).json({ message: "Supplier payment data updated successfully" });
+      } catch (error) {
+        console.error("Error updating supplier payment data:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    })
+
+  {/*}  router.put('/supplierpayment/:id/status', async (req, res) => {
+      const { id } = req.params;
+      const { status } = req.body;
+    
+      try {
+        const updatedPayment = await SupplierPayment.findByIdAndUpdate(id, { status }, { new: true });
+    
+        if (!updatedPayment) {
+          return res.status(404).json({ message: 'Payment not found' });
+        }
+    
+        res.json(updatedPayment);
+      } catch (error) {
+        console.error('Error updating payment status:', error);
+        res.status(500).json({ message: 'Internal server error' });
+      }
+    });*/}
+
+    app.put("/supplierpayment/:id/status", async (req, res) => {
+      const SupplierPaymentId = req.params.id;
+      const { status } = req.body;
+    
+      try {
+        const supplierpayment = await SupplierPayment.findByIdAndUpdate(SupplierPaymentId, { status }, { new: true });
+        if (!supplierpayment) {
+          return res.status(404).json({ message: "Supplier payment not found" });
+        }
+        res.status(200).json({ message: "Supplier payment status updated successfully", supplierpayment });
+      } catch (error) {
+        console.error("Error updating supplier payment status:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    
+
     app.get("/categories", async (req, res) => {
       try {
         const categories = await Category.find();
@@ -132,5 +199,6 @@ mongoose
     app.listen(PORT, () => console.log(`Server is running`));
     //Product.insertMany(dataProduct);
     //customer.insertMany(dataCustomer);
+    //SupplierPayment.insertMany(dataSupplierPayment);
   })
   .catch((error) => console.log(`${error} did not connect`));

@@ -29,3 +29,14 @@ export const dataCustomer = [
   totalDebt:"10000.00",
   },
 ];
+
+export const dataSupplierPayment = [
+  {
+    _id:"6371251df03239e685555034",
+    orderId: 44,
+    supplier:444,
+    invoiceValue: 4440,
+    paidMethod: 'Cheque',
+    checkDate: "2024/02/08",
+  },
+];

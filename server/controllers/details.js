@@ -3,6 +3,7 @@ import Customer from "../models/Customer.js";
 import Supplier from "../models/Supplier.js";
 import Sales from "../models/Sales.js";
 import Category from "../models/Categories.js";
+import SupplierPayment from "../models/SupplierPayment.js";
 
 export const getProducts = async (req, res) => {
   try {
@@ -44,6 +45,15 @@ export const getCategory = async (req, res) => {
   try {
     const categories = await Category.find();
     res.status(200).json(categories);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
+export const getSupplierPayment = async (req, res) => {
+  try {
+    const supplierPayment = await SupplierPayment.find();
+    res.status(200).json(supplierPayment);
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
