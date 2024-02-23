@@ -126,24 +126,63 @@ mongoose
       }
     });
 
-    app.put("/updatesupplierpayment", async (req, res) => {
+    app.post("/updatesupplierpayment", async (req, res) => {
       try {
         const updatedData = req.body;
     
         for (const row of updatedData) {
-          await SupplierPayment.findByIdAndUpdate(row._id, {
-            InvoiceValue: row.InvoiceValue,
-            PaidCheck: row.PaidCheck,
-            CheckDate: row.CheckDate,
+          await SupplierPayment.findOneAndUpdate({ _id: row._id }, row, { upsert: true });
+        }
+        res.status(200).json({ message: "Data saved successfully!" });
+      } catch (error) {
+        console.error("Error saving data:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
+
+   {/* router.post('/updatesupplierpayment', async (req, res) => {
+      try {
+        const { supplier, orderId } = req.body;
+    
+        const existingEntry = await SupplierPayment.findOne({ supplier, orderId });
+    
+        if (existingEntry) {
+          existingEntry.supplier = supplier;
+          existingEntry.orderId = orderId;
+          await existingEntry.save();
+          res.status(200).send("SupplierPayment entry updated successfully!");
+        } else {
+          const newSupplierPayment = new SupplierPayment({ supplier, orderId });
+          await newSupplierPayment.save();
+          res.status(201).send("New SupplierPayment entry created!");
+        }
+      } catch (error) {
+        console.error("Error updating SupplierPayment:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });   
+    
+
+    app.post('/updatesupplierpayment', async (req, res) => {
+      try {
+        const updatedData = req.body;
+    
+        for (const row of updatedData) {
+          await SupplierPayment.findByIdAndUpdate(id, {
+            orderId: row.orderId,
+            supplier: row.supplier,
+            invoiceValue: row.invoiceValue,
+            paidMethod: row.paidMethod,
+            checkDate: row.checkDate,
           });
         }
     
-        res.status(200).json({ message: "Supplier payment data updated successfully" });
+        res.status(200).json({ message: 'Supplier payment data updated successfully' });
       } catch (error) {
-        console.error("Error updating supplier payment data:", error);
-        res.status(500).json({ message: "Internal server error" });
+        console.error('Error updating supplier payment data:', error);
+        res.status(500).json({ message: 'Internal server error' });
       }
-    })
+    });*/}
 
   {/*}  router.put('/supplierpayment/:id/status', async (req, res) => {
       const { id } = req.params;

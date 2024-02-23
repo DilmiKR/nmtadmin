@@ -7,20 +7,17 @@ const SupplierPaymentSchema = new Schema(
     orderId: {
       type: String,
       ref: 'products', 
-      required: true
     },
     supplier: {
       type: String,
+      ref: 'products', 
       required: true
     },
     invoiceValue: {
       type: Number,
-      required: true
     },
     paidMethod: {
       type: String,
-      enum: ['Cash', 'Cheque'], 
-      required: true
     },
     checkDate: {
       type: Date,
@@ -34,6 +31,8 @@ const SupplierPaymentSchema = new Schema(
   },
   { timestamps: true }
 );
+
+SupplierPaymentSchema.index({ orderId: 1, supplier: 1 }, { unique: true });
 
 const SupplierPayment = mongoose.model("SupplierPayment", SupplierPaymentSchema);
 export default SupplierPayment;
