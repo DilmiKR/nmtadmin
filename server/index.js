@@ -91,17 +91,49 @@ mongoose
       .catch(err=>res.json(err))
     })
 
-    app.get("/suppliers/:id", async (req, res) => {
-      try {
-        const suppliers = await Supplier.find();
-        res.json(suppliers);
-      } catch (error) {
-        console.error("Error fetching suppliers:", error);
-        res.status(500).json({ message: "Internal server error" });
-      }
-    });
+    // Get all Suppliers
+app.get('/suppliers', async (req, res) => {
+  try {
+    const suppliers = await Supplier.find();
+    res.json(suppliers);
+  } catch (error) {
+    console.error('Error fetching suppliers:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
-    app.delete("/suppliers/:ContactPerson", (req, res) => {
+// Get Supplier by ID
+app.get('/suppliers/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const supplier = await Supplier.findById(id);
+    if (!supplier) {
+      return res.status(404).json({ message: 'Supplier not found' });
+    }
+    res.json(supplier);
+  } catch (error) {
+    console.error('Error fetching supplier:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update Supplier
+app.put('/suppliers/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const updatedSupplier = await Supplier.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    if (!updatedSupplier) {
+      return res.status(404).json({ message: 'Supplier not found' });
+    }
+    res.json(updatedSupplier);
+  } catch (error) {
+    console.error('Error updating supplier:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+    app.delete("/suppliers/:id", (req, res) => {
       const { id } = req.params;
       Supplier.findByIdAndDelete(id)
         .then((deletedSupplier) => {
