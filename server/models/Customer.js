@@ -13,6 +13,10 @@ const CustomerSchema = new mongoose.Schema(
         type: Number,
       required: true,
     },
+    comment: {
+      type: String,
+    },
+
   },
   { timestamps: true }
 );

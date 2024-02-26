@@ -41,6 +41,7 @@ mongoose
 .connect("mongodb+srv://nelundeniyamotortraders:nmt1234@cluster0.6vnazjw.mongodb.net/?retryWrites=true&w=majority")
   .then(() => {
 
+    // FETCH PRODUCTS
     app.get("/products", async (req, res) => {
       try {
         const products = await Product.find();
@@ -51,34 +52,54 @@ mongoose
       }
     });
 
+    //INSERT PRODUCTS
     app.post("/addproduct", (req,res)=> {
       Product.create(req.body)
       .then(Product => res.json(Product))
       .catch(err=>res.json(err))
     });
-    
-    app.put("/product/:id", async (req, res) => {
-      const productId = req.params.id;
-      const { quantity } = req.body;
 
+    //UPDATE PRODUCT
+    app.put('/products/:id', async (req, res) => {
       try {
-        const product = await Product.findByIdAndUpdate(productId, { quantity }, { new: true });
-        if (!product) {
+        const productId = req.params.id;
+        const updatedData = req.body;
+            const updatedProduct = await Product.findByIdAndUpdate(productId, updatedData, { new: true });
+            if (!updatedProduct) {
           return res.status(404).json({ message: "Product not found" });
         }
-        res.status(200).json({ message: "Product quantity updated successfully", product });
+            res.json(updatedProduct);
       } catch (error) {
-        console.error("Error updating product quantity:", error);
+        console.error("Error updating product:", error);
         res.status(500).json({ message: "Internal server error" });
       }
     });
 
-    app.post("/addcustomer", (req,res)=> {
-      Customer.create(req.body)
-      .then(Customer => res.json(Customer))
-      .catch(err=>res.json(err))
-    })
+    //DELETE PRODUCT
+    app.delete("/products/:id", (req, res) => {
+      const { id } = req.params;
+      Product.findByIdAndDelete(id)
+        .then((deletedProduct) => {
+          if (!deletedProduct) {
+            return res.status(404).json({ message: "Product not found" });
+          }
+          res.status(200).json({ message: "Product deleted successfully", deletedProduct });
+        })
+        .catch((error) => {
+          console.error("Error deleting Product:", error);
+          res.status(500).json({ message: "Internal server error" });
+        });
+    });
 
+
+    //INSERT CUSTOMERS
+    app.post("/addcustomer", (req, res) => {
+      const { customerName, totalDebt, comment } = req.body;
+      Customer.create({ customerName, totalDebt, comment }) // Include comment in the customer creation
+        .then((customer) => res.json(customer))
+        .catch((err) => res.json(err));
+    });    
+    
     app.post("/addsales", (req,res)=> {
       Sales.create(req.body)
       .then(Sales => res.json(Sales))
@@ -269,7 +290,7 @@ app.put('/suppliers/:id', async (req, res) => {
 
     app.listen(PORT, () => console.log(`Server is running`));
     //Product.insertMany(dataProduct);
-    //customer.insertMany(dataCustomer);
+   //Customer.insertMany(dataCustomer);
     //SupplierPayment.insertMany(dataSupplierPayment);
   })
   .catch((error) => console.log(`${error} did not connect`));

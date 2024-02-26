@@ -24,9 +24,9 @@ export const dataProduct = [
 
 export const dataCustomer = [
   {
-    _id:"6371251df03239e680000034",
   customerName:"Tom Hiddleston",
   totalDebt:"10000.00",
+  comment:"Got stock from cat01"
   },
 ];
 
