@@ -179,7 +179,15 @@ app.put('/suppliers/:id', async (req, res) => {
       }
     });
 
-    //INSERT INTO SUPPLIERPAYMENT TABLE
+     //INSERT SUPPLIERPAYMENTS
+     app.post("/addsupplierpayment", (req, res) => {
+      const { supplier, orderId, invoiceValue } = req.body;
+      SupplierPayment.create({ supplier, orderId, invoiceValue })
+        .then((supplierPayment) => res.json(supplierPayment))
+        .catch((err) => res.json(err));
+    });   
+
+    //INSERT payment method++ INTO SUPPLIERPAYMENT TABLE
     app.put('/supplierpayment/:id', async (req, res) => {
       const { id } = req.params;
       try {
@@ -195,6 +203,40 @@ app.put('/suppliers/:id', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
       }
     });
+    
+    //Update invoiceValue
+    
+
+{/*
+    app.post("/addsupplierpayment", (req, res) => {
+      try {
+        const { supplier, orderId, invoiceValue } = req.body;
+    
+        // Assuming the invoice value is provided in the request body
+        if (!supplier || !orderId || invoiceValue === undefined) {
+          return res.status(400).json({ message: "Invalid request body" });
+        }
+    
+        // Create a new supplier payment object
+        const newSupplierPayment = {
+          id: SupplierPayment.length + 1, // Generate a unique ID
+          supplier,
+          orderId,
+          invoiceValue,
+        };
+    
+        // Add the new supplier payment to the list
+        SupplierPayment.push(newSupplierPayment);
+    
+        // Return success response
+        res.status(200).json({ message: "Supplier payment added successfully", SupplierPayment: newSupplierPayment });
+      } catch (error) {
+        console.error("Error adding supplier payment:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });  */}
+
+    
       
 
    {/* router.post('/updatesupplierpayment', async (req, res) => {

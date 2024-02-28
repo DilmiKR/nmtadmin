@@ -21,7 +21,6 @@ const SupplierPaymentSchema = new Schema(
     },
     paidMethod: {
       type: String,
-      required: true
     },
     cashValue: {
       type: Number,
