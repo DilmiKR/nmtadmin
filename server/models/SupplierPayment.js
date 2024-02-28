@@ -4,29 +4,38 @@ const { Schema } = mongoose;
 
 const SupplierPaymentSchema = new Schema(
   {
-    orderId: {
-      type: String,
-      ref: 'products', 
-    },
     supplier: {
       type: String,
-      ref: 'products', 
+      ref: 'Supplier',
+      required: true
+    },
+    orderId: {
+      type: String,
+      ref: 'Product',
       required: true
     },
     invoiceValue: {
       type: Number,
+      ref: 'Product',
+      required: true
     },
     paidMethod: {
       type: String,
+      required: true
     },
-    checkDate: {
+    cashValue: {
+      type: Number,
+    },
+    chequeValue: {
+      type: Number,
+      
+    },
+    chequeDate: {
       type: Date,
-      required: function() {
-        return this.paidMethod === 'Cheque';
-      }
     },
     status: {
-      type:Boolean,
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }

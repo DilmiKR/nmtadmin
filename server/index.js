@@ -179,19 +179,23 @@ app.put('/suppliers/:id', async (req, res) => {
       }
     });
 
-    app.post("/updatesupplierpayment", async (req, res) => {
+    //INSERT INTO SUPPLIERPAYMENT TABLE
+    app.put('/supplierpayment/:id', async (req, res) => {
+      const { id } = req.params;
       try {
-        const updatedData = req.body;
-    
-        for (const row of updatedData) {
-          await SupplierPayment.findOneAndUpdate({ _id: row._id }, row, { upsert: true });
+        const updatedSupplierPayment = await SupplierPayment.findByIdAndUpdate(id, req.body, {
+          new: true,
+        });
+        if (!updatedSupplierPayment) {
+          return res.status(404).json({ message: 'Supplier not found' });
         }
-        res.status(200).json({ message: "Data saved successfully!" });
+        res.json(updatedSupplierPayment);
       } catch (error) {
-        console.error("Error saving data:", error.message);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error('Error updating SupplierPayment:', error);
+        res.status(500).json({ error: 'Internal server error' });
       }
     });
+      
 
    {/* router.post('/updatesupplierpayment', async (req, res) => {
       try {
@@ -291,6 +295,6 @@ app.put('/suppliers/:id', async (req, res) => {
     app.listen(PORT, () => console.log(`Server is running`));
     //Product.insertMany(dataProduct);
    //Customer.insertMany(dataCustomer);
-    //SupplierPayment.insertMany(dataSupplierPayment);
+   // SupplierPayment.insertMany(dataSupplierPayment);
   })
   .catch((error) => console.log(`${error} did not connect`));

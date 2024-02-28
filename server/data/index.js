@@ -32,11 +32,13 @@ export const dataCustomer = [
 
 export const dataSupplierPayment = [
   {
-    _id:"6371251df03239e685555034",
-    orderId: 44,
+  
+    orderId: "ases",
     supplier:444,
-    invoiceValue: 4440,
-    paidMethod: 'Cheque',
+    invoiceValue: 6000,
+    paidMethod: 'Cash & Check ',
     checkDate: "2024/02/08",
+    cashValue: 500,
+    checkValue: 4000
   },
 ];
