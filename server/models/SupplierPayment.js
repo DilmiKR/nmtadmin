@@ -6,17 +6,14 @@ const SupplierPaymentSchema = new Schema(
   {
     supplier: {
       type: String,
-      ref: 'Supplier',
       required: true
     },
     orderId: {
       type: String,
-      ref: 'Product',
       required: true
     },
     invoiceValue: {
       type: Number,
-      ref: 'Product',
       required: true
     },
     paidMethod: {
@@ -34,7 +31,6 @@ const SupplierPaymentSchema = new Schema(
     },
     status: {
       type: Boolean,
-      default: false
     }
   },
   { timestamps: true }
