@@ -20,7 +20,7 @@ import Category from './models/Categories.js';
 import SupplierPayment from './models/SupplierPayment.js';
 //import { dataCustomer } from './data/index.js';
 //import {dataProduct} from './data/index.js'
-//import { dataSupplierPayment } from './data/index.js';
+//import { dataProduct } from './data/index.js';
 
 dotenv.config();
 const app = express();
@@ -41,7 +41,9 @@ mongoose
 .connect("mongodb+srv://nelundeniyamotortraders:nmt1234@cluster0.6vnazjw.mongodb.net/?retryWrites=true&w=majority")
   .then(() => {
 
-    // FETCH PRODUCTS
+    {/*** STOCKS ***/}
+
+    // get products
     app.get("/products", async (req, res) => {
       try {
         const products = await Product.find();
@@ -53,69 +55,11 @@ mongoose
     });
 
     //INSERT PRODUCTS
-    app.post("/addproduct", async (req, res) => {
-      const { Supplier, OrderID, purchasedPrice } = req.body;
-    
-      try {
-        // Check if there are existing products with the same Supplier and OrderID
-        const existingProducts = await Product.find({ Supplier, OrderID });
-        let totalPurchasedPrice = 0;
-    
-        // Calculate the sum of purchasedPrice values
-        existingProducts.forEach((product) => {
-          totalPurchasedPrice += product.purchasedPrice;
-        });
-    
-        // If there are existing products, update the corresponding SupplierPayment
-        if (existingProducts.length > 0) {
-          const supplierPayment = await SupplierPayment.findOneAndUpdate(
-            { supplier: Supplier, orderId: OrderID },
-            { $inc: { invoiceValue: purchasedPrice } }, // Increment invoiceValue by purchasedPrice
-            { new: true }
-          );
-    
-          if (!supplierPayment) {
-            // Handle case where SupplierPayment doesn't exist
-            console.error("Supplier payment not found for updating");
-            res.status(404).json({ message: "Supplier payment not found for updating" });
-            return;
-          }
-    
-          // Respond with the updated SupplierPayment
-          res.status(200).json({ message: "Supplier payment updated successfully", supplierPayment });
-        } else {
-          // Check if there is an existing SupplierPayment entry with the same Supplier and OrderID
-          const existingSupplierPayment = await SupplierPayment.findOne({ supplier: Supplier, orderId: OrderID });
-    
-          if (existingSupplierPayment) {
-            // If SupplierPayment exists, update its invoiceValue
-            existingSupplierPayment.invoiceValue += purchasedPrice;
-            await existingSupplierPayment.save();
-    
-            // Respond with the updated SupplierPayment
-            res.status(200).json({ message: "Supplier payment updated successfully", supplierPayment: existingSupplierPayment });
-          } else {
-            // If no existing products or SupplierPayment, proceed with adding the new product and creating a new SupplierPayment
-            const product = await Product.create(req.body);
-    
-            // Create a new SupplierPayment with the purchasedPrice as invoiceValue
-            const newSupplierPayment = await SupplierPayment.create({
-              supplier: Supplier,
-              orderId: OrderID,
-              invoiceValue: purchasedPrice
-            });
-    
-            // Respond with the newly added product and SupplierPayment
-            res.status(201).json({ message: "Product added successfully", product, newSupplierPayment });
-          }
-        }
-      } catch (error) {
-        console.error("Error adding product:", error);
-        res.status(500).json({ message: "Internal server error" });
-      }
+    app.post("/addproduct", (req,res)=> {
+      Product.create(req.body)
+      .then(Product => res.json(Product))
+      .catch(err=>res.json(err))
     });
-    
-    
 
     //UPDATE PRODUCT
     app.put('/products/:id', async (req, res) => {
@@ -153,7 +97,7 @@ mongoose
     //INSERT CUSTOMERS
     app.post("/addcustomer", (req, res) => {
       const { customerName, totalDebt, comment } = req.body;
-      Customer.create({ customerName, totalDebt, comment }) // Include comment in the customer creation
+      Customer.create({ customerName, totalDebt, comment })
         .then((customer) => res.json(customer))
         .catch((err) => res.json(err));
     });    
@@ -227,151 +171,68 @@ app.put('/suppliers/:id', async (req, res) => {
         });
     });
 
-    app.get("/supplierpayment", async (req, res) => {
+    app.get("/Product", async (req, res) => {
       try {
-        const supplierpayment = await SupplierPayment.find();
-        res.json(supplierpayment);
+        const Product = await Product.find();
+        res.json(Product);
       } catch (error) {
         console.error("Error fetching Supplier Payment:", error);
         res.status(500).json({ message: "Internal server error" });
       }
     });
 
-     //INSERT SUPPLIERPAYMENTS
-     app.post("/addsupplierpayment", (req, res) => {
-      const { supplier, orderId, invoiceValue } = req.body;
-      SupplierPayment.create({ supplier, orderId, invoiceValue })
-        .then((supplierPayment) => res.json(supplierPayment))
-        .catch((err) => res.json(err));
-    });   
+     //INSERT supplier payments
+     app.post("/addsupplierpayment", async (req, res) => {
+      try {
+        // Assuming req.body contains the necessary data for creating or updating a supplier payment
+        const { supplier, orderId, invoiceValue } = req.body;
+    
+        // Find an existing supplier payment with the provided orderId and supplier
+        const existingSupplierPayment = await SupplierPayment.findOne({ supplier, orderId });
+    
+        if (existingSupplierPayment) {
+          // If an existing supplier payment is found, sum the existing invoice value with the new one
+          existingSupplierPayment.invoiceValue += parseFloat(invoiceValue);
+          await existingSupplierPayment.save();
+    
+          // Respond with the updated supplier payment
+          res.status(200).json(existingSupplierPayment);
+        } else {
+          // If no existing supplier payment is found, create a new one with the provided data
+          const newSupplierPayment = await SupplierPayment.create({
+            supplier,
+            orderId,
+            invoiceValue: parseFloat(invoiceValue) // Parse the invoiceValue to a float before saving
+          });
+    
+          // Respond with the newly created supplier payment
+          res.status(200).json(newSupplierPayment);
+        }
+      } catch (error) {
+        // If an error occurs during the process, send an error response
+        console.error("Error adding or updating supplier payment:", error);
+        res.status(500).json({ error: "Failed to add or update supplier payment" });
+      }
+    });
     
     
-    
-
-    //INSERT payment method++ INTO SUPPLIERPAYMENT TABLE
-    app.put('/supplierpayment/:id', async (req, res) => {
+    //INSERT payment method++ INTO Product TABLE
+    app.put('/Product/:id', async (req, res) => {
       const { id } = req.params;
       try {
-        const updatedSupplierPayment = await SupplierPayment.findByIdAndUpdate(id, req.body, {
+        const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
           new: true,
         });
-        if (!updatedSupplierPayment) {
+        if (!updatedProduct) {
           return res.status(404).json({ message: 'Supplier not found' });
         }
-        res.json(updatedSupplierPayment);
+        res.json(updatedProduct);
       } catch (error) {
-        console.error('Error updating SupplierPayment:', error);
+        console.error('Error updating Product:', error);
         res.status(500).json({ error: 'Internal server error' });
       }
     });
-      
-
-   {/* router.post('/updatesupplierpayment', async (req, res) => {
-      try {
-        const { supplier, orderId } = req.body;
     
-        const existingEntry = await SupplierPayment.findOne({ supplier, orderId });
-    
-        if (existingEntry) {
-          existingEntry.supplier = supplier;
-          existingEntry.orderId = orderId;
-          await existingEntry.save();
-          res.status(200).send("SupplierPayment entry updated successfully!");
-        } else {
-          const newSupplierPayment = new SupplierPayment({ supplier, orderId });
-          await newSupplierPayment.save();
-          res.status(201).send("New SupplierPayment entry created!");
-        }
-      } catch (error) {
-        console.error("Error updating SupplierPayment:", error);
-        res.status(500).send("Internal Server Error");
-      }
-    });   
-    
-
-    app.post('/updatesupplierpayment', async (req, res) => {
-      try {
-        const updatedData = req.body;
-    
-        for (const row of updatedData) {
-          await SupplierPayment.findByIdAndUpdate(id, {
-            orderId: row.orderId,
-            supplier: row.supplier,
-            invoiceValue: row.invoiceValue,
-            paidMethod: row.paidMethod,
-            checkDate: row.checkDate,
-          });
-        }
-    
-        res.status(200).json({ message: 'Supplier payment data updated successfully' });
-      } catch (error) {
-        console.error('Error updating supplier payment data:', error);
-        res.status(500).json({ message: 'Internal server error' });
-      }
-    });*/}
-
-  {/*}  router.put('/supplierpayment/:id/status', async (req, res) => {
-      const { id } = req.params;
-      const { status } = req.body;
-    
-      try {
-        const updatedPayment = await SupplierPayment.findByIdAndUpdate(id, { status }, { new: true });
-    
-        if (!updatedPayment) {
-          return res.status(404).json({ message: 'Payment not found' });
-        }
-    
-        res.json(updatedPayment);
-      } catch (error) {
-        console.error('Error updating payment status:', error);
-        res.status(500).json({ message: 'Internal server error' });
-      }
-    });
-  //Update invoiceValue
-    app.put('/supplierpaymentinvoice/:id', async (req, res) => {
-      const { id } = req.params;
-      try {
-        const { invoiceValue } = req.body;
-        const updatedSupplierPayment = await SupplierPayment.findByIdAndUpdate(
-          id,
-          { invoiceValue },
-          { new: true } 
-        );
-        if (!updatedSupplierPayment) {
-          return res.status(404).json({ message: 'Supplier payment not found' });
-        }
-        return res.status(200).json({ message: 'Supplier payment updated successfully', updatedSupplierPayment });
-      } catch (error) {
-        console.error('Error updating supplier payment:', error);
-        return res.status(500).json({ message: 'Internal server error' });
-      }
-    });
-    */}
-
-    app.put("/updatePaymentStatus/:id", async (req, res) => {
-      const { id } = req.params;
-      const { status } = req.body;
-    
-      try {
-        // Find the payment by ID and update its status
-        const updatedPayment = await SupplierPayment.findByIdAndUpdate(
-          id,
-          { status },
-          { new: true } // To return the updated document
-        );
-    
-        if (!updatedPayment) {
-          return res.status(404).json({ message: "Payment not found" });
-        }
-    
-        res.status(200).json({ message: "Payment status updated successfully", payment: updatedPayment });
-      } catch (error) {
-        console.error("Error updating payment status:", error);
-        res.status(500).json({ message: "Internal server error" });
-      }
-    });
-    
-
     app.get("/categories", async (req, res) => {
       try {
         const categories = await Category.find();
@@ -391,6 +252,162 @@ app.put('/suppliers/:id', async (req, res) => {
     app.listen(PORT, () => console.log(`Server is running`));
     //Product.insertMany(dataProduct);
    //Customer.insertMany(dataCustomer);
-   // SupplierPayment.insertMany(dataSupplierPayment);
+   // Product.insertMany(dataProduct);
   })
   .catch((error) => console.log(`${error} did not connect`));
+
+
+    
+
+   {/*  app.post("/addsupplierpayment", async (req, res) => {
+      const { supplier, orderId, lineValue } = req.body;
+    
+      try {
+        // Check if there are existing products with the same Supplier and OrderID
+        const existingProducts = await Product.find({ Supplier, OrderID });
+        let totalPurchasedPrice = 0;
+    
+        // Calculate the sum of purchasedPrice values
+        existingProducts.forEach((product) => {
+          totalPurchasedPrice += product.purchasedPrice;
+        });
+    
+        // If there are existing products, update the corresponding Product
+        if (existingProducts.length > 0) {
+          const Product = await Product.findOneAndUpdate(
+            { supplier: Supplier, orderId: OrderID },
+            { $inc: { invoiceValue: purchasedPrice } }, // Increment invoiceValue by purchasedPrice
+            { new: true }
+          );
+    
+          if (!Product) {
+            // Handle case where Product doesn't exist
+            console.error("Supplier payment not found for updating");
+            res.status(404).json({ message: "Supplier payment not found for updating" });
+            return;
+          }
+    
+          // Respond with the updated Product
+          res.status(200).json({ message: "Supplier payment updated successfully", Product });
+        } else {
+          // Check if there is an existing Product entry with the same Supplier and OrderID
+          const existingProduct = await Product.findOne({ supplier: Supplier, orderId: OrderID });
+    
+          if (existingProduct) {
+            // If Product exists, update its invoiceValue
+            existingProduct.invoiceValue += purchasedPrice;
+            await existingProduct.save();
+    
+            // Respond with the updated Product
+            res.status(200).json({ message: "Supplier payment updated successfully", Product: existingProduct });
+          } else {
+            // If no existing products or Product, proceed with adding the new product and creating a new Product
+            const product = await Product.create(req.body);
+    
+            // Create a new Product with the purchasedPrice as invoiceValue
+            const newProduct = await Product.create({
+              supplier: Supplier,
+              orderId: OrderID,
+              invoiceValue: purchasedPrice
+            });
+    
+            // Respond with the newly added product and Product
+            res.status(201).json({ message: "Product added successfully", product, newProduct });
+          }
+        }
+      } catch (error) {
+        console.error("Error adding product:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    
+    
+    
+    
+
+   
+   
+   
+   
+   
+   router.post('/updateProduct', async (req, res) => {
+      try {
+        const { supplier, orderId } = req.body;
+    
+        const existingEntry = await Product.findOne({ supplier, orderId });
+    
+        if (existingEntry) {
+          existingEntry.supplier = supplier;
+          existingEntry.orderId = orderId;
+          await existingEntry.save();
+          res.status(200).send("Product entry updated successfully!");
+        } else {
+          const newProduct = new Product({ supplier, orderId });
+          await newProduct.save();
+          res.status(201).send("New Product entry created!");
+        }
+      } catch (error) {
+        console.error("Error updating Product:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });   
+    
+
+    app.post('/updateProduct', async (req, res) => {
+      try {
+        const updatedData = req.body;
+    
+        for (const row of updatedData) {
+          await Product.findByIdAndUpdate(id, {
+            orderId: row.orderId,
+            supplier: row.supplier,
+            invoiceValue: row.invoiceValue,
+            paidMethod: row.paidMethod,
+            checkDate: row.checkDate,
+          });
+        }
+    
+        res.status(200).json({ message: 'Supplier payment data updated successfully' });
+      } catch (error) {
+        console.error('Error updating supplier payment data:', error);
+        res.status(500).json({ message: 'Internal server error' });
+      }
+    });*/}
+
+  {/*}  router.put('/Product/:id/status', async (req, res) => {
+      const { id } = req.params;
+      const { status } = req.body;
+    
+      try {
+        const updatedPayment = await Product.findByIdAndUpdate(id, { status }, { new: true });
+    
+        if (!updatedPayment) {
+          return res.status(404).json({ message: 'Payment not found' });
+        }
+    
+        res.json(updatedPayment);
+      } catch (error) {
+        console.error('Error updating payment status:', error);
+        res.status(500).json({ message: 'Internal server error' });
+      }
+    });
+  //Update invoiceValue
+    app.put('/Productinvoice/:id', async (req, res) => {
+      const { id } = req.params;
+      try {
+        const { invoiceValue } = req.body;
+        const updatedProduct = await Product.findByIdAndUpdate(
+          id,
+          { invoiceValue },
+          { new: true } 
+        );
+        if (!updatedProduct) {
+          return res.status(404).json({ message: 'Supplier payment not found' });
+        }
+        return res.status(200).json({ message: 'Supplier payment updated successfully', updatedProduct });
+      } catch (error) {
+        console.error('Error updating supplier payment:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+    });
+    */}
