@@ -4,6 +4,7 @@ import Supplier from "../models/Supplier.js";
 import Sales from "../models/Sales.js";
 import Category from "../models/Categories.js";
 import SupplierPayment from "../models/SupplierPayment.js";
+import NotAvailable from "../models/NotAvailable.js";
 
 export const getProduct = async (req, res) => {
     try {
@@ -60,6 +61,16 @@ export const getProduct = async (req, res) => {
       const { id } = req.params;
       const supplierpayment = await SupplierPayment.findById(id);
       res.status(200).json(supplierpayment);
+    } catch (error) {
+      res.status(404).json({ message: error.message });
+    }
+  };
+
+  export const getNotAvailable = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const notAvailable = await NotAvailable.findById(id);
+      res.status(200).json(notAvailable);
     } catch (error) {
       res.status(404).json({ message: error.message });
     }

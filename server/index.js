@@ -6,6 +6,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import multer from 'multer'; // Import multer with 'import' syntax
+const { diskStorage } = multer; // Destructure diskStorage from multer
 import detailRoutes from "./routes/detail.js";
 import generalRoutes from "./routes/general.js";
 import managementRoutes from "./routes/management.js";
@@ -18,6 +20,7 @@ import Sales from './models/Sales.js';
 import Supplier from './models/Supplier.js';
 import Category from './models/Categories.js';
 import SupplierPayment from './models/SupplierPayment.js';
+import NotAvailable from './models/NotAvailable.js';
 //import { dataCustomer } from './data/index.js';
 //import {dataProduct} from './data/index.js'
 //import { dataProduct } from './data/index.js';
@@ -35,6 +38,28 @@ app.use("/details", detailRoutes);
 app.use("/general", generalRoutes);
 app.use("/management", managementRoutes);
 app.use("/sales", salesRoutes);
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Specify the directory where uploaded files will be stored
+  },
+  filename: function (req, file, cb) {
+    // Generate a unique filename here, if needed
+    const uniqueFilename = generateUniqueFilename(file);
+    cb(null, uniqueFilename); // Use the generated filename for the uploaded file
+  }
+});
+
+// Function to generate a unique filename
+function generateUniqueFilename(file) {
+  // Generate a unique filename based on current timestamp and original filename
+  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+  return `${uniqueSuffix}-${file.originalname}`;
+}
+
+// Initialize multer with the defined storage
+const upload = multer({ storage: storage });
+
 
 const PORT = 5001 || 9000;
 mongoose
@@ -181,35 +206,30 @@ app.put('/suppliers/:id', async (req, res) => {
       }
     });
 
+    {/** SUPPLIER PAYMENTS **/}
+
      //INSERT supplier payments
      app.post("/addsupplierpayment", async (req, res) => {
       try {
-        // Assuming req.body contains the necessary data for creating or updating a supplier payment
         const { supplier, orderId, invoiceValue } = req.body;
     
-        // Find an existing supplier payment with the provided orderId and supplier
         const existingSupplierPayment = await SupplierPayment.findOne({ supplier, orderId });
     
         if (existingSupplierPayment) {
-          // If an existing supplier payment is found, sum the existing invoice value with the new one
           existingSupplierPayment.invoiceValue += parseFloat(invoiceValue);
           await existingSupplierPayment.save();
     
-          // Respond with the updated supplier payment
           res.status(200).json(existingSupplierPayment);
         } else {
-          // If no existing supplier payment is found, create a new one with the provided data
           const newSupplierPayment = await SupplierPayment.create({
             supplier,
             orderId,
-            invoiceValue: parseFloat(invoiceValue) // Parse the invoiceValue to a float before saving
+            invoiceValue: parseFloat(invoiceValue)
           });
     
-          // Respond with the newly created supplier payment
           res.status(200).json(newSupplierPayment);
         }
       } catch (error) {
-        // If an error occurs during the process, send an error response
         console.error("Error adding or updating supplier payment:", error);
         res.status(500).json({ error: "Failed to add or update supplier payment" });
       }
@@ -217,18 +237,18 @@ app.put('/suppliers/:id', async (req, res) => {
     
     
     //INSERT payment method++ INTO Product TABLE
-    app.put('/Product/:id', async (req, res) => {
+    app.put('/supplierpayment/:id', async (req, res) => {
       const { id } = req.params;
       try {
-        const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
+        const updatedSupplierPayment = await SupplierPayment.findByIdAndUpdate(id, req.body, {
           new: true,
         });
-        if (!updatedProduct) {
-          return res.status(404).json({ message: 'Supplier not found' });
+        if (!updatedSupplierPayment) {
+          return res.status(404).json({ message: 'Supplier Payment not found' });
         }
-        res.json(updatedProduct);
+        res.json(updatedSupplierPayment);
       } catch (error) {
-        console.error('Error updating Product:', error);
+        console.error('Error updating Supplier Payment:', error);
         res.status(500).json({ error: 'Internal server error' });
       }
     });
@@ -248,6 +268,52 @@ app.put('/suppliers/:id', async (req, res) => {
       .then(Category => res.json(Category))
       .catch(err=>res.json(err))
     });
+
+    {/*** NOT AVAILABLE PRODUCTS ***/}
+
+    //insert data into not available
+    app.post("/addnotavailableproduct", upload.single('Item_Image'), (req, res) => {
+      try {
+        // Access req.body for other form fields
+        const { Date, Vehicle_Type, Item, Item_Description, Brand, Inventory, comment } = req.body;
+        
+        let Item_Image = ''; // Initialize Item_Image variable
+    
+        // Check if req.file exists and contains the uploaded file
+        if (req.file) {
+          // Access req.file for the uploaded image
+          Item_Image = req.file.filename; // Assuming 'filename' contains the filename of the uploaded image
+        }
+    
+        // Create a new instance of NotAvailable model with the received data
+        const newNotAvailable = new NotAvailable({
+          Date,
+          Vehicle_Type,
+          Item,
+          Item_Description,
+          Brand,
+          Inventory,
+          comment,
+          Item_Image // Save the filename of the uploaded image or an empty string if no image is uploaded
+        });
+    
+        // Save the new NotAvailable document to the database
+        newNotAvailable.save()
+          .then(savedNotAvailable => {
+            console.log('NotAvailable saved:', savedNotAvailable);
+            res.json(savedNotAvailable); // Send the saved document as response
+          })
+          .catch(err => {
+            console.error('Error saving NotAvailable:', err);
+            res.status(500).json({ error: 'Internal Server Error' });
+          });
+      } catch (error) {
+        console.error('Error:', error.message);
+        res.status(400).json({ error: error.message }); // Send a 400 Bad Request response with the error message
+      }
+    });
+    
+    
 
     app.listen(PORT, () => console.log(`Server is running`));
     //Product.insertMany(dataProduct);
@@ -322,13 +388,6 @@ app.put('/suppliers/:id', async (req, res) => {
     });
     
     
-    
-    
-
-   
-   
-   
-   
    
    router.post('/updateProduct', async (req, res) => {
       try {
