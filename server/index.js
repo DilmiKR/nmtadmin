@@ -79,14 +79,14 @@ mongoose
       }
     });
 
-    //INSERT PRODUCTS
+    //insert stock
     app.post("/addproduct", (req,res)=> {
       Product.create(req.body)
       .then(Product => res.json(Product))
       .catch(err=>res.json(err))
     });
 
-    //UPDATE PRODUCT
+    //update stock
     app.put('/products/:id', async (req, res) => {
       try {
         const productId = req.params.id;
@@ -102,7 +102,7 @@ mongoose
       }
     });
 
-    //DELETE PRODUCT
+    //delete stocks
     app.delete("/products/:id", (req, res) => {
       const { id } = req.params;
       Product.findByIdAndDelete(id)
@@ -118,8 +118,31 @@ mongoose
         });
     });
 
+     {/*** CATEGORIES ***/}
 
-    //INSERT CUSTOMERS
+    //get category
+    app.get("/categories", async (req, res) => {
+      try {
+        const categories = await Category.find();
+        res.json(categories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
+    //add category
+    app.post("/addcategory", (req,res)=> {
+      Category.create(req.body)
+      .then(Category => res.json(Category))
+      .catch(err=>res.json(err))
+    });
+
+
+
+    {/*** CUSTOMERS ***/}
+
+    //insert customers
     app.post("/addcustomer", (req, res) => {
       const { customerName, totalDebt, comment } = req.body;
       Customer.create({ customerName, totalDebt, comment })
@@ -253,22 +276,7 @@ app.put('/suppliers/:id', async (req, res) => {
       }
     });
     
-    app.get("/categories", async (req, res) => {
-      try {
-        const categories = await Category.find();
-        res.json(categories);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        res.status(500).json({ message: "Internal server error" });
-      }
-    });
-
-    app.post("/addcategory", (req,res)=> {
-      Category.create(req.body)
-      .then(Category => res.json(Category))
-      .catch(err=>res.json(err))
-    });
-
+   
     {/*** NOT AVAILABLE PRODUCTS ***/}
 
     //insert data into not available
