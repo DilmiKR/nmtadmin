@@ -21,7 +21,6 @@ const ProductSchema = new mongoose.Schema(
       type: String,
       required: true,
       min: 2,
-      max: 100
     },
     
     brand: {

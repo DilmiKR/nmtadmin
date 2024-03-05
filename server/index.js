@@ -234,9 +234,9 @@ app.put('/suppliers/:id', async (req, res) => {
      //INSERT supplier payments
      app.post("/addsupplierpayment", async (req, res) => {
       try {
-        const { supplier, orderId, invoiceValue } = req.body;
+        const { supplier, orderId, invoiceValue, nelundeniyaCode } = req.body;
     
-        const existingSupplierPayment = await SupplierPayment.findOne({ supplier, orderId });
+        const existingSupplierPayment = await SupplierPayment.findOne({ supplier, orderId, nelundeniyaCode });
     
         if (existingSupplierPayment) {
           existingSupplierPayment.invoiceValue += parseFloat(invoiceValue);
@@ -247,7 +247,8 @@ app.put('/suppliers/:id', async (req, res) => {
           const newSupplierPayment = await SupplierPayment.create({
             supplier,
             orderId,
-            invoiceValue: parseFloat(invoiceValue)
+            invoiceValue: parseFloat(invoiceValue),
+            nelundeniyaCode
           });
     
           res.status(200).json(newSupplierPayment);
@@ -257,6 +258,7 @@ app.put('/suppliers/:id', async (req, res) => {
         res.status(500).json({ error: "Failed to add or update supplier payment" });
       }
     });
+    
     
     
     //INSERT payment method++ INTO Product TABLE

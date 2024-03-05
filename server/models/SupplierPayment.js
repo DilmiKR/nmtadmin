@@ -4,6 +4,10 @@ const { Schema } = mongoose;
 
 const SupplierPaymentSchema = new Schema(
   {
+    nelundeniyaCode: {
+      type: String,
+      required: true
+    },
     supplier: {
       type: String,
       required: true
