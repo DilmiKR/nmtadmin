@@ -6,8 +6,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import multer from 'multer'; // Import multer with 'import' syntax
-const { diskStorage } = multer; // Destructure diskStorage from multer
+import multer from 'multer';
+const { diskStorage } = multer; 
 import detailRoutes from "./routes/detail.js";
 import generalRoutes from "./routes/general.js";
 import managementRoutes from "./routes/management.js";
@@ -23,7 +23,7 @@ import SupplierPayment from './models/SupplierPayment.js';
 import NotAvailable from './models/NotAvailable.js';
 //import { dataCustomer } from './data/index.js';
 //import {dataProduct} from './data/index.js'
-//import { dataProduct } from './data/index.js';
+//import { dataSupplierPayment } from './data/index.js';
 
 dotenv.config();
 const app = express();
@@ -61,10 +61,13 @@ function generateUniqueFilename(file) {
 const upload = multer({ storage: storage });
 
 
+
+
 const PORT = 5001 || 9000;
 mongoose
 .connect("mongodb+srv://nelundeniyamotortraders:nmt1234@cluster0.6vnazjw.mongodb.net/?retryWrites=true&w=majority")
   .then(() => {
+
 
     {/*** STOCKS ***/}
 
@@ -78,6 +81,41 @@ mongoose
         res.status(500).json({ message: "Internal server error" });
       }
     });
+
+    //get products by nelundeniyaCode
+    const nelundeniyaRouter = express.Router();
+
+    nelundeniyaRouter.get("addstock/:nelundeniyaCode", async (req, res) => {
+      const { nelundeniyaCode } = req.params;
+      try {
+        const product = await Product.findOne({ nelundeniyaCode });
+        if (!product) {
+          return res.status(404).json({ message: "Product not found" });
+        }
+        res.json(product);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
+    // Mount the router for fetching products by Nelundeniya code
+    app.use("/products", nelundeniyaRouter);
+
+    app.get("/addstock/:nelundeniyaCode", async (req, res) => {
+      const { nelundeniyaCode } = req.params;
+      try {
+        const product = await Product.findOne({ nelundeniyaCode });
+        if (!product) {
+          return res.status(404).json({ message: "Product not found" });
+        }
+        res.json(product);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    
 
     //insert stock
     app.post("/addproduct", (req,res)=> {
@@ -98,6 +136,23 @@ mongoose
             res.json(updatedProduct);
       } catch (error) {
         console.error("Error updating product:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
+   // Available quantity update
+    app.put("/products/:id", async (req, res) => {
+      const productId = req.params.id;
+      const { quantity } = req.body;
+
+      try {
+        const product = await Product.findByIdAndUpdate(productId, { quantity }, { new: true });
+        if (!product) {
+          return res.status(404).json({ message: "Product not found" });
+        }
+        res.status(200).json({ message: "Product quantity updated successfully", product });
+      } catch (error) {
+        console.error("Error updating product quantity:", error);
         res.status(500).json({ message: "Internal server error" });
       }
     });
@@ -231,6 +286,16 @@ app.put('/suppliers/:id', async (req, res) => {
 
     {/** SUPPLIER PAYMENTS **/}
 
+    
+    SupplierPayment.collection.dropIndex("orderId_1_supplier_1", function(err, result) {
+      if (err) {
+        console.log("Error dropping index:", err);
+      } else {
+        console.log("Index dropped successfully:", result);
+      }
+    });
+    
+
      //INSERT supplier payments
      app.post("/addsupplierpayment", async (req, res) => {
       try {
@@ -258,10 +323,59 @@ app.put('/suppliers/:id', async (req, res) => {
         res.status(500).json({ error: "Failed to add or update supplier payment" });
       }
     });
+
+    // TEMP
+    app.post("/updatesupplierpayment", async (req, res) => {
+      try {
+        const { supplier, orderId, invoiceValue, nelundeniyaCode } = req.body;
+    
+        const existingSupplierPayment = await SupplierPayment.findOne({ supplier, orderId, nelundeniyaCode });
+    
+        if (existingSupplierPayment) {
+          existingSupplierPayment.invoiceValue += parseFloat(invoiceValue);
+          await existingSupplierPayment.save();
+    
+          res.status(200).json(existingSupplierPayment);
+        } else {
+          const newSupplierPayment = await SupplierPayment.create({
+            supplier,
+            orderId,
+            invoiceValue: parseFloat(invoiceValue),
+            nelundeniyaCode
+          });
+    
+          res.status(200).json(newSupplierPayment);
+        }
+      } catch (error) {
+        console.error("Error adding or updating supplier payment:", error);
+        res.status(500).json({ error: "Failed to add or update supplier payment" });
+      }
+    });
+
+    //updateinvoiceValue
+    app.put("/addsupplierpaymentinvoice", (req, res) => {
+      const { supplier, orderId, nelundeniyaCode, invoiceValue } = req.body;
+      SupplierPayment.findOneAndUpdate(
+          { supplier, orderId, nelundeniyaCode },
+          { invoiceValue },
+          { new: true } 
+      )
+      .then((updatedSupplierPayment) => {
+          if (!updatedSupplierPayment) {
+              return res.status(404).json({ message: "Supplier payment not found" });
+          }
+          res.status(200).json({ message: "Supplier payment updated successfully", updatedSupplierPayment });
+      })
+      .catch((error) => {
+          console.error("Error updating supplier payment:", error);
+          res.status(500).json({ message: "Internal server error" });
+      });
+  });
+  
     
     
     
-    //INSERT payment method++ INTO Product TABLE
+    //INSERT payment method++ INTO SupploerPayment TABLE
     app.put('/supplierpayment/:id', async (req, res) => {
       const { id } = req.params;
       try {
@@ -278,6 +392,24 @@ app.put('/suppliers/:id', async (req, res) => {
       }
     });
     
+
+    // DElete Supplier Paymenys
+    app.delete("/supplierpayment/:supplier/:orderId/:nelundeniyaCode", (req, res) => {
+      const { supplier, orderId, nelundeniyaCode } = req.params;
+      SupplierPayment.findOneAndDelete({ supplier, orderId, nelundeniyaCode })
+        .then((deletedSupplierPayment) => {
+          if (!deletedSupplierPayment) {
+            return res.status(404).json({ message: "SupplierPayment not found" });
+          }
+          res.status(200).json({ message: "SupplierPayment deleted successfully" });
+        })
+        .catch((error) => {
+          console.error("Error deleting SupplierPayment:", error);
+          res.status(500).json({ message: "Internal server error" });
+        });
+    });
+    
+
    
     {/*** NOT AVAILABLE PRODUCTS ***/}
 
@@ -323,12 +455,13 @@ app.put('/suppliers/:id', async (req, res) => {
       }
     });
     
-    
+
+   
 
     app.listen(PORT, () => console.log(`Server is running`));
     //Product.insertMany(dataProduct);
    //Customer.insertMany(dataCustomer);
-   // Product.insertMany(dataProduct);
+   // SupplierPayment.insertMany(dataSupplierPayment);
   })
   .catch((error) => console.log(`${error} did not connect`));
 
@@ -393,6 +526,31 @@ app.put('/suppliers/:id', async (req, res) => {
         }
       } catch (error) {
         console.error("Error adding product:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    
+     app.get("/fetch-and-insert", async (req, res) => {
+      try {
+        const products = await Product.find();
+        
+        for (const product of products) {
+          const { Supplier, OrderID, quantity, purchasedPrice, nelundeniyaCode } = product;
+          
+          const invoiceValue = quantity * purchasedPrice;
+          const supplier = Supplier;
+          const orderId = OrderID;
+          
+          await SupplierPayment.create({
+            supplier, 
+            orderId,
+            nelundeniyaCode,
+            invoiceValue,
+          });
+        }
+        res.status(200).json({ message: "Products inserted into Supplier Payments successfully" });
+      } catch (error) {
+        console.error("Error fetching and inserting products:", error);
         res.status(500).json({ message: "Internal server error" });
       }
     });
@@ -479,4 +637,6 @@ app.put('/suppliers/:id', async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
       }
     });
+
+    
     */}

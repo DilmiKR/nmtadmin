@@ -1,8 +1,6 @@
 import mongoose from "mongoose";
 
-const { Schema } = mongoose;
-
-const SupplierPaymentSchema = new Schema(
+const SupplierPaymentSchema = new mongoose.Schema(
   {
     nelundeniyaCode: {
       type: String,
@@ -28,7 +26,6 @@ const SupplierPaymentSchema = new Schema(
     },
     chequeValue: {
       type: Number,
-      
     },
     chequeDate: {
       type: Date,
@@ -40,7 +37,6 @@ const SupplierPaymentSchema = new Schema(
   { timestamps: true }
 );
 
-SupplierPaymentSchema.index({ orderId: 1, supplier: 1 }, { unique: true });
 
 const SupplierPayment = mongoose.model("SupplierPayment", SupplierPaymentSchema);
 export default SupplierPayment;

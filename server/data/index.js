@@ -30,15 +30,3 @@ export const dataCustomer = [
   },
 ];
 
-export const dataSupplierPayment = [
-  {
-  
-    orderId: "ases",
-    supplier:444,
-    invoiceValue: 6000,
-    paidMethod: 'Cash & Check ',
-    checkDate: "2024/02/08",
-    cashValue: 500,
-    checkValue: 4000
-  },
-];
