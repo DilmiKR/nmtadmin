@@ -21,6 +21,7 @@ import Supplier from './models/Supplier.js';
 import Category from './models/Categories.js';
 import SupplierPayment from './models/SupplierPayment.js';
 import NotAvailable from './models/NotAvailable.js';
+import Order from './models/OnlineOrders.js';
 //import { dataCustomer } from './data/index.js';
 //import {dataProduct} from './data/index.js'
 //import { dataSupplierPayment } from './data/index.js';
@@ -393,7 +394,7 @@ app.put('/suppliers/:id', async (req, res) => {
     });
     
 
-    // DElete Supplier Paymenys
+    // Delete Supplier Paymenys
     app.delete("/supplierpayment/:supplier/:orderId/:nelundeniyaCode", (req, res) => {
       const { supplier, orderId, nelundeniyaCode } = req.params;
       SupplierPayment.findOneAndDelete({ supplier, orderId, nelundeniyaCode })
@@ -454,7 +455,15 @@ app.put('/suppliers/:id', async (req, res) => {
         res.status(400).json({ error: error.message }); // Send a 400 Bad Request response with the error message
       }
     });
-    
+
+    {/*** ONLINE ORDER ***/}
+
+    //Insert Online Order
+    app.post("/addorder", (req,res)=> {
+      Order.create(req.body)
+      .then(Order => res.json(Order))
+      .catch(err=>res.json(err))
+    })
 
    
 
