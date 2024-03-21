@@ -206,6 +206,27 @@ mongoose
         .catch((err) => res.json(err));
     });    
     
+    //Update paymentCompleted
+    app.put('/updateCustomer/:id', async (req, res) => {
+      try {
+        const customerId = req.params.id;
+        const { paymentCompleted } = req.body;
+            const updatedCustomer = await Customer.findByIdAndUpdate(
+          customerId,
+          { paymentCompleted },
+          { new: true } 
+        );
+        if (!updatedCustomer) {
+          return res.status(404).json({ error: 'Customer not found' });
+        }
+        res.json(updatedCustomer);
+      } catch (error) {
+        console.error('Error updating customer:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+
     app.post("/addsales", (req,res)=> {
       Sales.create(req.body)
       .then(Sales => res.json(Sales))

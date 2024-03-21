@@ -32,7 +32,6 @@ const ProductSchema = new mongoose.Schema(
     
     UnitPrice: {
       type: Number,
-      required: true
     },
 
     purchasedQuantity: {
@@ -85,7 +84,6 @@ const ProductSchema = new mongoose.Schema(
     
     UOM: {
       type: String,
-      required: true,
       min: 2,
       max: 100
     },

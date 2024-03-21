@@ -16,6 +16,10 @@ const CustomerSchema = new mongoose.Schema(
     comment: {
       type: String,
     },
+    paymentCompleted: {
+      type: Boolean,
+      default: false,
+    },
 
   },
   { timestamps: true }
