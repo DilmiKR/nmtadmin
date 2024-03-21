@@ -5,6 +5,7 @@ import Sales from "../models/Sales.js";
 import Category from "../models/Categories.js";
 import SupplierPayment from "../models/SupplierPayment.js";
 import NotAvailable from "../models/NotAvailable.js";
+import Order from "../models/OnlineOrders.js";
 
 export const getProduct = async (req, res) => {
     try {
@@ -71,6 +72,16 @@ export const getProduct = async (req, res) => {
       const { id } = req.params;
       const notAvailable = await NotAvailable.findById(id);
       res.status(200).json(notAvailable);
+    } catch (error) {
+      res.status(404).json({ message: error.message });
+    }
+  };
+
+  export const getOrder = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const order = await Order.findById(id);
+      res.status(200).json(order);
     } catch (error) {
       res.status(404).json({ message: error.message });
     }

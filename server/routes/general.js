@@ -6,6 +6,7 @@ import { getSales } from "../controllers/details.js";
 import { getCategory } from "../controllers/details.js";
 import { getSupplierPayment } from "../controllers/details.js";
 import { getNotAvailabe } from "../controllers/details.js";
+import { getOrder } from "../controllers/details.js";
 
 const router = express.Router();
 
@@ -16,6 +17,6 @@ router.get("/Sales/:id", getSales);
 router.get("/categories/:category", getCategory);
 router.get("/supplierpayment/:id", getSupplierPayment);
 router.get("/NotAvailable/:id", getNotAvailabe);
-
+router.get("/order/:id", getOrder);
 
 export default router;
